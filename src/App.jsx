@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import logo from "./logo.svg";
 import "./App.css";
 import InputSection from "./components/inputSection/inputSection";
 import GameLine from "./components/gameLine/gameLine";
+import WouldYouRatherModal from "./components/wouldYouRatherModal/wouldYouRatherModal";
 
 const App = () => {
     const [gameList, setGameList] = useState([]);
-    const [gameName, setNewGameName] = useState("");
-    const [errorMessage, setErrorMessage] = useState("");
+    const [newGameName, setNewGameName] = useState("");
+    // const [errorMessage, setErrorMessage] = useState("");
     const [modalIsOpen, setModalIsOpen] = useState(false);
 
     const isDuplicate = (gameName) => {
@@ -31,8 +31,10 @@ const App = () => {
     };
 
     const addNewGame = (name, index) => {
+        setNewGameName(name);
+
         const newGame = {
-            name,
+            name: name,
             released: false,
             owned: false,
             progress: "None",
@@ -48,10 +50,12 @@ const App = () => {
         }
     };
 
-    const handleAddNewGame = (name) => {
+    const handleAddNewGameButton = (name) => {
         if (!name) return alert("Name cannot be empty");
 
         if (isDuplicate(name)) return alert("This game already exist");
+
+        setNewGameName(name);
 
         if (gameList.length > 0) return setModalIsOpen(true);
 
@@ -59,18 +63,25 @@ const App = () => {
     };
 
     const handleGameUpdate = (update) => {
-        const index = gameList.findIndex((g) => g.name === update.name);
-
-        gameList[index].released = update.released;
-        gameList[index].owned = update.owned;
-        gameList[index].progress = update.progress;
-        gameList[index].objective = update.objective;
-        setGameList(gameList.slice());
+        // console.log(update);
+        // const index = gameList.findIndex((g) => g.name === update.name);
+        //     // gameList[index].released = update.released;
+        //     // gameList[index].owned = update.owned;
+        //     // gameList[index].progress = update.progress;
+        //     // gameList[index].objective = update.objective;
+        // setGameList(gameList.slice(index, 1, update));
     };
 
     return (
         <div className="App">
-            <InputSection addNewGame={handleAddNewGame} />
+            <InputSection
+                addNewGame={handleAddNewGameButton}
+                updateName={setNewGameName}
+                gameList={gameList}
+                importGames={(games) => {
+                    setGameList(games);
+                }}
+            />
 
             <table id="game-list">
                 <thead>
@@ -84,30 +95,29 @@ const App = () => {
                 </thead>
                 <tbody>
                     {gameList.length > 0 &&
-                        gameList.map((game, index) => (
-                            <GameLine
-                                key={index}
-                                game={game}
-                                updateGame={handleGameUpdate}
-                            />
-                        ))}
+                        gameList.map((game) => {
+                            return (
+                                <GameLine
+                                    key={game.name}
+                                    game={game}
+                                    updateGame={handleGameUpdate}
+                                />
+                            );
+                        })}
                 </tbody>
             </table>
 
-            <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo" />
-                <p>
-                    Edit <code>src/App.js</code> and save to reload.
-                </p>
-                <a
-                    className="App-link"
-                    href="https://reactjs.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Learn React
-                </a>
-            </header>
+            {modalIsOpen && (
+                <WouldYouRatherModal
+                    newGameName={newGameName}
+                    gameList={gameList}
+                    addNewGame={addNewGame}
+                    isOpen={modalIsOpen}
+                    closeModal={() => {
+                        setModalIsOpen(false);
+                    }}
+                />
+            )}
         </div>
     );
 };

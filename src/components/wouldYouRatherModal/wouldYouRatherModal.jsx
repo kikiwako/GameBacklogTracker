@@ -1,25 +1,74 @@
 import React from "react";
 import { useState, useRef, useEffect } from "react";
+import Modal from "react-modal";
 
 const WouldYouRatherModal = (props) => {
-    const [gameToCompare, setGameToCompare] = useState();
+    // const [gameToCompare, setGameToCompare] = useState();
     const [middleIndex, setMiddleIndex] = useState(0);
     const [minIndex, setMinIndex] = useState(0);
     const [maxIndex, setMaxIndex] = useState(0);
-
-    const modalRef = useRef();
+    const [isOpen, setIsOpen] = useState(props.isOpen || false);
 
     useEffect(() => {
-        setGameToCompare(props.);
-        modalRef.current.openModal();
-    }, []);
+        const diff = maxIndex - minIndex;
+        setMiddleIndex(minIndex + Math.floor(diff / 2));
+    }, [minIndex, maxIndex]);
+
+    useEffect(() => {
+        setIsOpen(props.isOpen);
+    }, [props.isOpen]);
+
+    const onOpen = () => {
+        setMaxIndex(props.gameList.length - 1);
+    };
 
     const handleChoice = (currentGameIsBetter) => {
+        if (minIndex === maxIndex) {
+            if (currentGameIsBetter) {
+                props.addNewGame(props.newGameName, minIndex);
+            } else {
+                props.addNewGame(props.newGameName, minIndex + 1);
+            }
+            closeModal();
+            return;
+        }
 
+        if (currentGameIsBetter) {
+            let newMax = middleIndex - 1;
+            setMaxIndex(newMax < minIndex ? minIndex : newMax);
+        } else {
+            // if (minIndex === middleIndex) {
+            //     setMinIndex(minIndex + 1);
+            // } else {
+            let newMin = middleIndex + 1;
+            setMinIndex(newMin > maxIndex ? maxIndex : newMin);
+            // }
+        }
+    };
+
+    const customStyles = {
+        content: {
+            top: "50%",
+            left: "50%",
+            right: "auto",
+            bottom: "auto",
+            marginRight: "-50%",
+            transform: "translate(-50%, -50%)",
+        },
+    };
+
+    const closeModal = () => {
+        props.closeModal();
     };
 
     return (
-        <dialog ref={modalRef} className="modal">
+        <Modal
+            isOpen={isOpen}
+            onAfterOpen={onOpen}
+            shouldCloseOnEsc={true}
+            style={customStyles}
+            onRequestClose={closeModal}
+        >
             <div>Would you rather play...</div>
             <div className="games">
                 <button
@@ -27,7 +76,7 @@ const WouldYouRatherModal = (props) => {
                         handleChoice(true);
                     }}
                 >
-                    {props.newGame}
+                    {props.newGameName}
                 </button>
                 or
                 <button
@@ -35,13 +84,13 @@ const WouldYouRatherModal = (props) => {
                         handleChoice(false);
                     }}
                 >
-                    {gameToCompare || getGameToCompare()}
+                    {props.gameList[middleIndex].name}
                 </button>
+                <div>
+                    {minIndex} - {middleIndex} - {maxIndex}
+                </div>
             </div>
-            {/* <div>
-                <small>{compareList.length} games to filter...</small>
-            </div> */}
-        </dialog>
+        </Modal>
     );
 };
 

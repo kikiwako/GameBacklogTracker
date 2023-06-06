@@ -66,11 +66,17 @@ const GameLine = (props) => {
                 <td>
                     <input
                         type="text"
-                        value={props.game.objective}
+                        value={gameData.objective}
                         onChange={(e) => {
-                            props.updateProgress(e.target.value, props.index);
+                            gameData.objective = e.target.innerText;
+                            setGameData(gameData);
                         }}
                     />
+                </td>
+                <td>
+                    <button disabled>Up</button>
+                    <button disabled>Down</button>
+                    <button disabled>Delete</button>
                 </td>
             </tr>
         )
